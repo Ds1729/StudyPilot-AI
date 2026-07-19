@@ -1,0 +1,241 @@
+{
+  "name": "StudyPilot AI – Personalized Study Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert study planner.\n\nCreate a personalized study plan.\n\nStudent Name:\n{{$json.Name}}\n\nEmail:\n{{$json.Email}}\n\nSubject:\n{{$json.Subject}}\n\nHours Per Day:\n{{$json[\"Hours Per Day\"]}}\n\nExam Date:\n{{$json[\"Exam Date\"]}}\n\nReturn only a well-formatted day-by-day study plan.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        160
+      ],
+      "id": "9c4e5b37-7d7b-4a85-9247-29500b8b889f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        368
+      ],
+      "id": "a6d65b94-5146-4622-b1cb-53cb3ea8d0fc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TZkbyYRaxB4xcAne",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bfVcaHGyOCGW0J7GXLAaSBnM7IMsh_fakUYTcrCvFhQ",
+          "mode": "list",
+          "cachedResultName": "StudyPilot AI Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bfVcaHGyOCGW0J7GXLAaSBnM7IMsh_fakUYTcrCvFhQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1173043919,
+          "mode": "list",
+          "cachedResultName": "StudyPlan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bfVcaHGyOCGW0J7GXLAaSBnM7IMsh_fakUYTcrCvFhQ/edit#gid=1173043919"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{$node[\"Google Sheets Trigger\"].json.Name}}",
+            "Date": "={{new Date().toLocaleDateString()}}",
+            "Plan": "={{$json.output}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Plan",
+              "displayName": "Plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        160
+      ],
+      "id": "a3b51271-2564-49e9-99f9-7fce79ede375",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TnyVQmY6g3QCNuuK",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node[\"Google Sheets Trigger\"].json.Email}}",
+        "subject": "Your Personalized Study Plan",
+        "message": "=<div style=\"font-family:Arial,sans-serif;max-width:700px;margin:auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;\">\n\n<div style=\"background:#2563eb;color:white;padding:20px;text-align:center;\">\n<h1>📚 StudyPilot AI</h1>\n<p>Your Personalized Study Plan</p>\n</div>\n\n<div style=\"padding:20px;\">\n\n<p>Hello <b>{{$node[\"Google Sheets Trigger\"].json.Name}}</b>,</p>\n\n<p>Thank you for using <b>StudyPilot AI</b>. Your personalized study plan has been generated successfully.</p>\n\n<table style=\"border-collapse:collapse;width:100%;margin-top:20px;\">\n<tr>\n<td style=\"padding:8px;border:1px solid #ddd;\"><b>Subject</b></td>\n<td style=\"padding:8px;border:1px solid #ddd;\">{{$node[\"Google Sheets Trigger\"].json.Subject}}</td>\n</tr>\n\n<tr>\n<td style=\"padding:8px;border:1px solid #ddd;\"><b>Daily Study Hours</b></td>\n<td style=\"padding:8px;border:1px solid #ddd;\">{{$node[\"Google Sheets Trigger\"].json[\"Hours Per Day\"]}}</td>\n</tr>\n\n<tr>\n<td style=\"padding:8px;border:1px solid #ddd;\"><b>Exam Date</b></td>\n<td style=\"padding:8px;border:1px solid #ddd;\">{{$node[\"Google Sheets Trigger\"].json[\"Exam Date\"]}}</td>\n</tr>\n</table>\n\n<h2 style=\"margin-top:30px;\">📖 Your AI Generated Study Plan</h2>\n\n<div style=\"background:#f5f5f5;padding:15px;border-radius:8px;white-space:pre-wrap;\">\n{{$node[\"AI Agent\"].json.output}}\n</div>\n\n<p style=\"margin-top:25px;\">\nBest wishes for your exam preparation! 🎯\n</p>\n\n<p>\nRegards,<br>\n<b>StudyPilot AI</b>\n</p>\n\n</div>\n\n<div style=\"background:#f0f0f0;padding:10px;text-align:center;font-size:12px;\">\nGenerated automatically using n8n + Google Gemini AI\n</div>\n\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        160
+      ],
+      "id": "0c86311b-cae7-4cd4-a88d-e7e874162c26",
+      "name": "Send a message",
+      "webhookId": "6171d6f0-595d-45ca-ae49-92b389e8b6da",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EvbiSnYqISdhl567",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1cWcofeO9oO_97BN0MNI8eq3CrlRO0SZX0P1krLdOhZA",
+          "mode": "list",
+          "cachedResultName": "StudyPilot Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cWcofeO9oO_97BN0MNI8eq3CrlRO0SZX0P1krLdOhZA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1299971582,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cWcofeO9oO_97BN0MNI8eq3CrlRO0SZX0P1krLdOhZA/edit#gid=1299971582"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "97dbafeb-4d30-4ede-a6bd-dddc1e5b19a4",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "65Wp3xpes1yt4Zk7",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5c343e03-bb9f-4054-84f2-7d024253e749",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e94542dadb73cbe038ed30e53a9621fc56bb83bd3fb5ad6245f5468169a0ce7b"
+  },
+  "nodeGroups": [],
+  "id": "k2j63s1VH0LSmTDk",
+  "tags": []
+}
